@@ -15,21 +15,19 @@ import PublicLessons from "./pages/PublicLessons";
 import Dashboard from "./pages/Dashboard";
 import AddLesson from "./pages/AddLesson";
 import NotFound from "./pages/NotFound";
-import {
-  LessonDetails,
-  MyLessons,
-  UpdateLesson,
-  MyFavorites,
-  UserProfile,
-  Pricing,
-  PaymentSuccess,
-  PaymentCancel,
-  AdminDashboard,
-  ManageUsers,
-  ManageLessons,
-  ReportedLessons,
-  AdminProfile,
-} from "./pages/stubs";
+import LessonDetailsPage from "./pages/LessonDetailsPage";
+import MyLessonsPage from "./pages/MyLessonsPage";
+import UpdateLessonPage from "./pages/UpdateLessonPage";
+import MyFavoritesPage from "./pages/MyFavoritesPage";
+import UserProfilePage from "./pages/UserProfilePage";
+import PricingPage from "./pages/PricingPage";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+import PaymentCancelPage from "./pages/PaymentCancelPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+import ManageUsersPage from "./pages/ManageUsersPage";
+import ManageLessonsPage from "./pages/ManageLessonsPage";
+import ReportedLessonsPage from "./pages/ReportedLessonsPage";
+import AdminProfilePage from "./pages/AdminProfilePage";
 
 function App() {
   return (
@@ -44,7 +42,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/lessons" element={<PublicLessons />} />
-              <Route path="/lessons/:id" element={<LessonDetails />} />
+              <Route path="/lessons/:id" element={<LessonDetailsPage />} />
 
               {/* Private Routes */}
               <Route
@@ -67,7 +65,7 @@ function App() {
                 path="/dashboard/my-lessons"
                 element={
                   <PrivateRoute>
-                    <MyLessons />
+                    <MyLessonsPage />
                   </PrivateRoute>
                 }
               />
@@ -75,7 +73,7 @@ function App() {
                 path="/dashboard/update-lesson/:id"
                 element={
                   <PrivateRoute>
-                    <UpdateLesson />
+                    <UpdateLessonPage />
                   </PrivateRoute>
                 }
               />
@@ -83,7 +81,7 @@ function App() {
                 path="/dashboard/my-favorites"
                 element={
                   <PrivateRoute>
-                    <MyFavorites />
+                    <MyFavoritesPage />
                   </PrivateRoute>
                 }
               />
@@ -91,7 +89,7 @@ function App() {
                 path="/dashboard/profile"
                 element={
                   <PrivateRoute>
-                    <UserProfile />
+                    <UserProfilePage />
                   </PrivateRoute>
                 }
               />
@@ -99,7 +97,7 @@ function App() {
                 path="/pricing"
                 element={
                   <PrivateRoute>
-                    <Pricing />
+                    <PricingPage />
                   </PrivateRoute>
                 }
               />
@@ -107,7 +105,7 @@ function App() {
                 path="/payment/success"
                 element={
                   <PrivateRoute>
-                    <PaymentSuccess />
+                    <PaymentSuccessPage />
                   </PrivateRoute>
                 }
               />
@@ -115,7 +113,7 @@ function App() {
                 path="/payment/cancel"
                 element={
                   <PrivateRoute>
-                    <PaymentCancel />
+                    <PaymentCancelPage />
                   </PrivateRoute>
                 }
               />
@@ -125,7 +123,7 @@ function App() {
                 path="/dashboard/admin"
                 element={
                   <AdminRoute>
-                    <AdminDashboard />
+                    <AdminDashboardPage />
                   </AdminRoute>
                 }
               />
@@ -133,7 +131,7 @@ function App() {
                 path="/dashboard/admin/manage-users"
                 element={
                   <AdminRoute>
-                    <ManageUsers />
+                    <ManageUsersPage />
                   </AdminRoute>
                 }
               />
@@ -141,7 +139,7 @@ function App() {
                 path="/dashboard/admin/manage-lessons"
                 element={
                   <AdminRoute>
-                    <ManageLessons />
+                    <ManageLessonsPage />
                   </AdminRoute>
                 }
               />
@@ -149,7 +147,7 @@ function App() {
                 path="/dashboard/admin/reported-lessons"
                 element={
                   <AdminRoute>
-                    <ReportedLessons />
+                    <ReportedLessonsPage />
                   </AdminRoute>
                 }
               />
@@ -157,7 +155,7 @@ function App() {
                 path="/dashboard/admin/profile"
                 element={
                   <AdminRoute>
-                    <AdminProfile />
+                    <AdminProfilePage />
                   </AdminRoute>
                 }
               />
