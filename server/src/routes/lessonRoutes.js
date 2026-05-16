@@ -5,31 +5,13 @@ import { verifyToken, verifyAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Public routes
+// Public routes for browsing
 router.get("/public", lessonController.getPublicLessons);
-router.get("/:id", lessonController.getLessonById);
-router.get("/:id/comments", lessonController.getComments);
 
-// Protected routes
-router.post("/", verifyToken, lessonController.createLesson);
+// Protected routes - must come before /:id routes
 router.get("/user/my-lessons", verifyToken, lessonController.getUserLessons);
-router.put("/:id", verifyToken, lessonController.updateLesson);
-router.delete("/:id", verifyToken, lessonController.deleteLesson);
-router.post("/:id/like", verifyToken, lessonController.toggleLike);
-router.post("/:id/comment", verifyToken, lessonController.addComment);
-router.delete(
-  "/:id/comment/:commentId",
-  verifyToken,
-  lessonController.deleteComment,
-);
 
-// Favorites
-router.post("/favorites/add", verifyToken, favoriteController.addFavorite);
-router.post(
-  "/favorites/remove",
-  verifyToken,
-  favoriteController.removeFavorite,
-);
+// Favorites routes - must come before /:id routes
 router.get(
   "/favorites/my-favorites",
   verifyToken,
@@ -40,9 +22,14 @@ router.get(
   verifyToken,
   favoriteController.isFavorited,
 );
+router.post("/favorites/add", verifyToken, favoriteController.addFavorite);
+router.post(
+  "/favorites/remove",
+  verifyToken,
+  favoriteController.removeFavorite,
+);
 
-// Reports
-router.post("/:id/report", verifyToken, favoriteController.reportLesson);
+// Admin report routes - must come before /:id routes
 router.get(
   "/admin/reports/all",
   verifyToken,
@@ -61,5 +48,22 @@ router.delete(
   verifyAdmin,
   favoriteController.deleteReportedLesson,
 );
+
+// Lesson specific routes
+router.post("/", verifyToken, lessonController.createLesson);
+router.get("/:id", lessonController.getLessonById);
+router.get("/:id/comments", lessonController.getComments);
+router.put("/:id", verifyToken, lessonController.updateLesson);
+router.delete("/:id", verifyToken, lessonController.deleteLesson);
+router.post("/:id/like", verifyToken, lessonController.toggleLike);
+router.post("/:id/comment", verifyToken, lessonController.addComment);
+router.delete(
+  "/:id/comment/:commentId",
+  verifyToken,
+  lessonController.deleteComment,
+);
+
+// Reports
+router.post("/:id/report", verifyToken, favoriteController.reportLesson);
 
 export default router;
