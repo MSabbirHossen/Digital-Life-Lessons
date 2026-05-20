@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useLessons } from "../hooks/useLessons";
 import { useInteractions, useFavorites } from "../hooks/useInteractions";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
+import { REPORT_REASONS } from "../constants/lessons";
+import {
+  FacebookShareButton,
+  LinkedinShareButton,
+  TwitterShareButton,
+} from "react-share";
+import { LessonCard } from "../components/LessonCard";
 
 const LessonDetailsPage = () => {
   const { id } = useParams();
@@ -21,6 +29,8 @@ const LessonDetailsPage = () => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportData, setReportData] = useState({ reason: "", description: "" });
+  const [isPremiumBlocked, setIsPremiumBlocked] = useState(false);
+  const [similarLessons, setSimilarLessons] = useState([]);
 
   useEffect(() => {
     fetchLesson();
@@ -34,12 +44,23 @@ const LessonDetailsPage = () => {
       if (lessonData) {
         setLesson(lessonData.lesson);
         setComments(lessonData.comments || []);
+        setIsPremiumBlocked(Boolean(lessonData.isPremiumBlocked));
+        fetchSimilarLessons();
       }
     } catch (error) {
       toast.error("Failed to load lesson");
       navigate("/lessons");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSimilarLessons = async () => {
+    try {
+      const response = await api.get(`/lessons/${id}/similar`);
+      setSimilarLessons(response.data.lessons || []);
+    } catch (error) {
+      console.error("Error fetching similar lessons:", error);
     }
   };
 
@@ -151,6 +172,10 @@ const LessonDetailsPage = () => {
     );
   }
 
+  const isOwner = user?._id === lesson.userId?._id;
+  const canModerate = user?.role === "admin" || isOwner;
+  const shareUrl = window.location.href;
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -182,13 +207,13 @@ const LessonDetailsPage = () => {
                     : "bg-gray-100 text-gray-600"
                 }`}
               >
-                {isFavorited ? "❤️" : "🤍"} Save
+                {isFavorited ? "Saved" : "Save"}
               </button>
               <button
                 onClick={handleLike}
                 className="px-4 py-2 rounded-lg bg-blue-100 text-blue-600 flex items-center gap-2"
               >
-                👍 {lesson.likesCount || 0}
+                Like {lesson.likesCount || 0}
               </button>
             </div>
           </div>
@@ -203,30 +228,72 @@ const LessonDetailsPage = () => {
               />
             )}
             <div>
-              <p className="font-semibold">{lesson.userId?.name}</p>
+              <Link
+                to={`/profile/${lesson.userId?._id}`}
+                className="font-semibold hover:text-primary"
+              >
+                {lesson.userId?.name}
+              </Link>
               <p className="text-gray-600 text-sm">
-                {new Date(lesson.createdAt).toLocaleDateString()} •{" "}
+                {new Date(lesson.createdAt).toLocaleDateString()} |{" "}
                 {lesson.views || 0} views
               </p>
             </div>
           </div>
 
           {/* Lesson Content */}
-          <div className="prose max-w-none">
-            <p className="text-lg leading-relaxed text-gray-800 whitespace-pre-wrap">
-              {lesson.description}
-            </p>
-          </div>
-
-          {lesson.accessLevel === "Premium" && (
-            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-              <p className="text-yellow-800 text-sm">⭐ Premium Content</p>
+          {isPremiumBlocked ? (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+              <div className="text-4xl mb-3">Lock</div>
+              <h2 className="text-2xl font-bold text-yellow-900 mb-2">
+                Premium lesson
+              </h2>
+              <p className="text-yellow-800 mb-6">
+                Upgrade to Premium to read the full lesson and support deeper
+                community reflections.
+              </p>
+              {user ? (
+                <Link to="/pricing" className="btn-secondary">
+                  Upgrade to Premium
+                </Link>
+              ) : (
+                <Link to="/login" className="btn-primary">
+                  Login to Upgrade
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div className="prose max-w-none">
+              <p className="text-lg leading-relaxed text-gray-800 whitespace-pre-wrap">
+                {lesson.description}
+              </p>
             </div>
           )}
 
+          {lesson.accessLevel === "Premium" && (
+            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <p className="text-yellow-800 text-sm">Premium Content</p>
+            </div>
+          )}
+
+          <div className="mt-6 grid grid-cols-1 gap-3 text-sm text-gray-600 sm:grid-cols-3">
+            <div className="rounded-lg bg-gray-50 p-3">
+              <span className="font-semibold">Visibility:</span>{" "}
+              {lesson.visibility}
+            </div>
+            <div className="rounded-lg bg-gray-50 p-3">
+              <span className="font-semibold">Updated:</span>{" "}
+              {new Date(lesson.updatedAt).toLocaleDateString()}
+            </div>
+            <div className="rounded-lg bg-gray-50 p-3">
+              <span className="font-semibold">Saves:</span>{" "}
+              {lesson.favoritesCount || 0}
+            </div>
+          </div>
+
           {/* Action Buttons */}
-          <div className="mt-8 flex gap-4">
-            {user?.role === "admin" || user?._id === lesson.userId?._id ? (
+          <div className="mt-8 flex flex-wrap gap-4">
+            {canModerate ? (
               <>
                 <button
                   onClick={() => navigate(`/dashboard/update-lesson/${id}`)}
@@ -236,7 +303,16 @@ const LessonDetailsPage = () => {
                 </button>
                 <button
                   onClick={async () => {
-                    if (window.confirm("Delete this lesson?")) {
+                    const result = await Swal.fire({
+                      title: "Delete this lesson?",
+                      text: "This action cannot be undone.",
+                      icon: "warning",
+                      showCancelButton: true,
+                      confirmButtonText: "Delete",
+                      confirmButtonColor: "#dc2626",
+                    });
+
+                    if (result.isConfirmed) {
                       try {
                         await api.delete(`/lessons/${id}`);
                         toast.success("Lesson deleted");
@@ -258,6 +334,21 @@ const LessonDetailsPage = () => {
             >
               Report
             </button>
+            <FacebookShareButton url={shareUrl} quote={lesson.title}>
+              <span className="inline-block rounded-lg bg-blue-50 px-4 py-2 text-blue-700">
+                Facebook
+              </span>
+            </FacebookShareButton>
+            <TwitterShareButton url={shareUrl} title={lesson.title}>
+              <span className="inline-block rounded-lg bg-gray-100 px-4 py-2 text-gray-700">
+                X
+              </span>
+            </TwitterShareButton>
+            <LinkedinShareButton url={shareUrl} title={lesson.title}>
+              <span className="inline-block rounded-lg bg-sky-50 px-4 py-2 text-sky-700">
+                LinkedIn
+              </span>
+            </LinkedinShareButton>
           </div>
         </div>
 
@@ -265,7 +356,7 @@ const LessonDetailsPage = () => {
         <div className="bg-white rounded-lg shadow p-8">
           <h2 className="text-2xl font-bold mb-6">Comments</h2>
 
-          {user ? (
+          {user && !isPremiumBlocked ? (
             <form onSubmit={handleAddComment} className="mb-8 pb-8 border-b">
               <textarea
                 value={commentText}
@@ -285,7 +376,9 @@ const LessonDetailsPage = () => {
           ) : (
             <div className="mb-8 pb-8 border-b text-center">
               <p className="text-gray-600 mb-4">
-                Please login to comment on this lesson
+                {isPremiumBlocked
+                  ? "Upgrade to Premium to join this discussion."
+                  : "Please login to comment on this lesson"}
               </p>
               <a href="/login" className="btn-primary">
                 Login
@@ -333,6 +426,17 @@ const LessonDetailsPage = () => {
             )}
           </div>
         </div>
+
+        {similarLessons.length > 0 && (
+          <div className="mt-8">
+            <h2 className="mb-6 text-2xl font-bold">Similar Lessons</h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {similarLessons.map((similar) => (
+                <LessonCard key={similar._id} lesson={similar} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Report Modal */}
@@ -353,11 +457,11 @@ const LessonDetailsPage = () => {
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Select a reason</option>
-                  <option value="Inappropriate">Inappropriate Content</option>
-                  <option value="Spam">Spam</option>
-                  <option value="Offensive">Offensive</option>
-                  <option value="Misinformation">Misinformation</option>
-                  <option value="Other">Other</option>
+                  {REPORT_REASONS.map((reason) => (
+                    <option key={reason} value={reason}>
+                      {reason}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
