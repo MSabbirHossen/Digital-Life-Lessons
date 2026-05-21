@@ -109,7 +109,9 @@ export const LessonCard = ({ lesson, onFavoriteClick }) => {
           type="button"
           onClick={handleLikeClick}
           className={`inline-flex items-center gap-2 rounded px-3 py-2 transition ${
-            isLiked ? "bg-red-50 text-red-600" : "hover:bg-gray-100"
+            isLiked
+              ? "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300"
+              : "hover:bg-gray-100 dark:hover:bg-slate-800"
           }`}
         >
           {isLiked ? <FaHeart /> : <FaRegHeart />}
@@ -119,7 +121,9 @@ export const LessonCard = ({ lesson, onFavoriteClick }) => {
           type="button"
           onClick={handleSaveClick}
           className={`inline-flex items-center gap-2 rounded px-3 py-2 transition ${
-            isFavorited ? "bg-emerald-50 text-emerald-700" : "hover:bg-gray-100"
+            isFavorited
+              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+              : "hover:bg-gray-100 dark:hover:bg-slate-800"
           }`}
         >
           {isFavorited ? <FaSave /> : <FaRegBookmark />}
