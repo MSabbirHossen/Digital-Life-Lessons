@@ -41,7 +41,9 @@ const ManageUsersPage = () => {
         const response = await api.post("/auth/admin/promote", { userId });
         const updatedUser = response.data.user;
         setUsers((current) =>
-          current.map((item) => (item._id === updatedUser._id ? updatedUser : item)),
+          current.map((item) =>
+            item._id === updatedUser._id ? updatedUser : item,
+          ),
         );
         toast.success("User promoted to admin");
       } catch (error) {
@@ -52,10 +54,15 @@ const ManageUsersPage = () => {
 
   const handleAssignRole = async (userId, role) => {
     try {
-      const response = await api.post("/auth/admin/assign-role", { userId, role });
+      const response = await api.post("/auth/admin/assign-role", {
+        userId,
+        role,
+      });
       const updatedUser = response.data.user;
       setUsers((current) =>
-        current.map((item) => (item._id === updatedUser._id ? updatedUser : item)),
+        current.map((item) =>
+          item._id === updatedUser._id ? updatedUser : item,
+        ),
       );
       toast.success("Role updated");
     } catch (err) {
@@ -65,10 +72,15 @@ const ManageUsersPage = () => {
 
   const handleTogglePremium = async (userId, isPremium) => {
     try {
-      const response = await api.post("/auth/admin/toggle-premium", { userId, isPremium });
+      const response = await api.post("/auth/admin/toggle-premium", {
+        userId,
+        isPremium,
+      });
       const updatedUser = response.data.user;
       setUsers((current) =>
-        current.map((item) => (item._id === updatedUser._id ? updatedUser : item)),
+        current.map((item) =>
+          item._id === updatedUser._id ? updatedUser : item,
+        ),
       );
       toast.success("User premium status updated");
     } catch (err) {
@@ -78,10 +90,15 @@ const ManageUsersPage = () => {
 
   const handleSetBadge = async (userId, specialBadge) => {
     try {
-      const response = await api.post("/auth/admin/set-badge", { userId, specialBadge });
+      const response = await api.post("/auth/admin/set-badge", {
+        userId,
+        specialBadge,
+      });
       const updatedUser = response.data.user;
       setUsers((current) =>
-        current.map((item) => (item._id === updatedUser._id ? updatedUser : item)),
+        current.map((item) =>
+          item._id === updatedUser._id ? updatedUser : item,
+        ),
       );
       toast.success("User badge updated");
     } catch (err) {
