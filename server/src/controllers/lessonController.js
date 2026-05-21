@@ -128,6 +128,77 @@ export const getFeaturedLessons = async (req, res) => {
   });
 };
 
+export const getTopSavedLessons = async (req, res) => {
+  const user = await getDbUserFromRequest(req);
+
+  const rawLessons = await Lesson.find({
+    visibility: "Public",
+    favoritesCount: { $gt: 0 },
+  })
+    .populate("userId", populateAuthor)
+    .sort({ favoritesCount: -1, createdAt: -1 })
+    .limit(3);
+
+  return res.json({
+    success: true,
+    lessons: sanitizeLessonList(rawLessons, user),
+  });
+};
+
+export const getTopContributorsOfWeek = async (req, res) => {
+  const since = new Date();
+  since.setDate(since.getDate() - 7);
+
+  const contributors = await Lesson.aggregate([
+    {
+      $match: {
+        visibility: "Public",
+        createdAt: { $gte: since },
+      },
+    },
+    {
+      $group: {
+        _id: "$userId",
+        lessonCount: { $sum: 1 },
+        totalSaves: { $sum: "$favoritesCount" },
+        totalLikes: { $sum: "$likesCount" },
+        latestLessonAt: { $max: "$createdAt" },
+      },
+    },
+    {
+      $sort: {
+        lessonCount: -1,
+        totalSaves: -1,
+        totalLikes: -1,
+        latestLessonAt: -1,
+      },
+    },
+    { $limit: 3 },
+    {
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    { $unwind: "$user" },
+    {
+      $project: {
+        _id: "$user._id",
+        name: "$user.name",
+        photoURL: "$user.photoURL",
+        lessonsCreated: "$user.lessonsCreated",
+        lessonCount: 1,
+        totalSaves: 1,
+        totalLikes: 1,
+      },
+    },
+  ]);
+
+  return res.json({ success: true, contributors });
+};
+
 export const getSimilarLessons = async (req, res) => {
   const user = await getDbUserFromRequest(req);
   const currentLesson = await Lesson.findById(req.params.id);

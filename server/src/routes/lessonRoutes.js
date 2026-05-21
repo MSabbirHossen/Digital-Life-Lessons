@@ -27,6 +27,12 @@ const router = express.Router();
 router.get("/", optionalVerifyToken, lessonController.getPublicLessons);
 router.get("/public", optionalVerifyToken, lessonController.getPublicLessons);
 router.get("/featured", optionalVerifyToken, lessonController.getFeaturedLessons);
+router.get("/top-saved", optionalVerifyToken, lessonController.getTopSavedLessons);
+router.get(
+  "/top-contributors-week",
+  optionalVerifyToken,
+  lessonController.getTopContributorsOfWeek,
+);
 
 // Protected routes - must come before /:id routes
 router.get("/user/my-lessons", verifyToken, lessonController.getUserLessons);
