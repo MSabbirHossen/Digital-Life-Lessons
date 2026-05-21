@@ -12,7 +12,11 @@ import {
   makeLessonPreview,
   sanitizeLessonList,
 } from "../utils/accessControl.js";
-import { escapeRegex, makePagination, parsePagination } from "../utils/queryUtils.js";
+import {
+  escapeRegex,
+  makePagination,
+  parsePagination,
+} from "../utils/queryUtils.js";
 
 const populateAuthor = "name email photoURL lessonsCreated";
 
@@ -203,7 +207,9 @@ export const getSimilarLessons = async (req, res) => {
   const user = await getDbUserFromRequest(req);
   const currentLesson = await Lesson.findById(req.params.id);
   if (!currentLesson) {
-    return res.status(404).json({ success: false, message: "Lesson not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Lesson not found" });
   }
 
   const rawLessons = await Lesson.find({
@@ -236,7 +242,9 @@ export const getAdminLessons = async (req, res) => {
   if (req.query.featured === "true") query.isFeatured = true;
   if (req.query.featured === "false") query.isFeatured = false;
   if (req.query.search) {
-    const safeSearch = escapeRegex(String(req.query.search).trim().slice(0, 80));
+    const safeSearch = escapeRegex(
+      String(req.query.search).trim().slice(0, 80),
+    );
     query.$or = [
       { title: { $regex: safeSearch, $options: "i" } },
       { description: { $regex: safeSearch, $options: "i" } },
@@ -290,7 +298,9 @@ export const toggleFeaturedLesson = async (req, res) => {
   ).populate("userId", populateAuthor);
 
   if (!lesson) {
-    return res.status(404).json({ success: false, message: "Lesson not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Lesson not found" });
   }
 
   return res.json({
@@ -310,7 +320,9 @@ export const getLessonById = async (req, res) => {
   );
 
   if (!lesson) {
-    return res.status(404).json({ success: false, message: "Lesson not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Lesson not found" });
   }
 
   const access = getLessonAccessBlock(lesson, user);
@@ -363,7 +375,9 @@ export const updateLesson = async (req, res) => {
   ]);
 
   if (!lesson) {
-    return res.status(404).json({ success: false, message: "Lesson not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Lesson not found" });
   }
 
   if (!isLessonOwner(lesson, user) && !isAdmin(user)) {
@@ -391,7 +405,8 @@ export const updateLesson = async (req, res) => {
   ];
   for (const field of allowedFields) {
     if (Object.prototype.hasOwnProperty.call(req.body, field)) {
-      lesson[field] = req.body[field] || (field === "imageURL" ? null : req.body[field]);
+      lesson[field] =
+        req.body[field] || (field === "imageURL" ? null : req.body[field]);
     }
   }
 
@@ -437,7 +452,9 @@ export const deleteLesson = async (req, res) => {
   ]);
 
   if (!lesson) {
-    return res.status(404).json({ success: false, message: "Lesson not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Lesson not found" });
   }
 
   if (!isLessonOwner(lesson, user) && !isAdmin(user)) {
@@ -456,7 +473,9 @@ export const toggleLike = async (req, res) => {
   const lesson = await Lesson.findById(req.params.id);
 
   if (!lesson) {
-    return res.status(404).json({ success: false, message: "Lesson not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Lesson not found" });
   }
 
   if (!user) {
@@ -508,7 +527,9 @@ export const addComment = async (req, res) => {
     return res.status(404).json({ success: false, message: "User not found" });
   }
   if (!lesson) {
-    return res.status(404).json({ success: false, message: "Lesson not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Lesson not found" });
   }
   if (!canInteractWithLesson(lesson, user)) {
     return res.status(403).json({
@@ -538,7 +559,9 @@ export const getComments = async (req, res) => {
   ]);
 
   if (!lesson) {
-    return res.status(404).json({ success: false, message: "Lesson not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Lesson not found" });
   }
   if (!canInteractWithLesson(lesson, user)) {
     return res.status(403).json({
@@ -561,7 +584,9 @@ export const deleteComment = async (req, res) => {
   ]);
 
   if (!comment) {
-    return res.status(404).json({ success: false, message: "Comment not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Comment not found" });
   }
 
   if (comment.userId.toString() !== user?._id.toString() && !isAdmin(user)) {
