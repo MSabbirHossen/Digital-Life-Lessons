@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const FALLBACK_API_BASE_URL = "https://digital-life-lessons-server.vercel.app/api";
+const FALLBACK_API_BASE_URL =
+  "https://digital-life-lessons-server.vercel.app/api";
 
 const configuredApiBaseUrl =
   import.meta.env.VITE_API_BASE_URL ||
