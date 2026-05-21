@@ -2,7 +2,7 @@
 
 A comprehensive platform where users can create, share, and discover meaningful life lessons and personal growth insights. Built with React, Node.js, Express, MongoDB, Firebase, and Stripe.
 
-🌐 **Live Demo**: [Coming Soon]
+🌐 **Live Demo**: https://your-client-live-site.example (replace with actual URL)
 
 ## 📋 Features
 

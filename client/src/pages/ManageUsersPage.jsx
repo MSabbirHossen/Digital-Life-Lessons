@@ -38,12 +38,54 @@ const ManageUsersPage = () => {
 
     if (result.isConfirmed) {
       try {
-        await api.post("/auth/admin/promote", { userId });
+        const response = await api.post("/auth/admin/promote", { userId });
+        const updatedUser = response.data.user;
+        setUsers((current) =>
+          current.map((item) => (item._id === updatedUser._id ? updatedUser : item)),
+        );
         toast.success("User promoted to admin");
-        fetchUsers();
       } catch (error) {
         toast.error("Failed to promote user");
       }
+    }
+  };
+
+  const handleAssignRole = async (userId, role) => {
+    try {
+      const response = await api.post("/auth/admin/assign-role", { userId, role });
+      const updatedUser = response.data.user;
+      setUsers((current) =>
+        current.map((item) => (item._id === updatedUser._id ? updatedUser : item)),
+      );
+      toast.success("Role updated");
+    } catch (err) {
+      toast.error("Failed to update role");
+    }
+  };
+
+  const handleTogglePremium = async (userId, isPremium) => {
+    try {
+      const response = await api.post("/auth/admin/toggle-premium", { userId, isPremium });
+      const updatedUser = response.data.user;
+      setUsers((current) =>
+        current.map((item) => (item._id === updatedUser._id ? updatedUser : item)),
+      );
+      toast.success("User premium status updated");
+    } catch (err) {
+      toast.error("Failed to update premium status");
+    }
+  };
+
+  const handleSetBadge = async (userId, specialBadge) => {
+    try {
+      const response = await api.post("/auth/admin/set-badge", { userId, specialBadge });
+      const updatedUser = response.data.user;
+      setUsers((current) =>
+        current.map((item) => (item._id === updatedUser._id ? updatedUser : item)),
+      );
+      toast.success("User badge updated");
+    } catch (err) {
+      toast.error("Failed to update badge");
     }
   };
 
@@ -60,8 +102,8 @@ const ManageUsersPage = () => {
     if (result.isConfirmed) {
       try {
         await api.post("/auth/admin/delete-user", { userId });
+        setUsers((current) => current.filter((item) => item._id !== userId));
         toast.success("User deleted successfully");
-        fetchUsers();
       } catch (error) {
         toast.error("Failed to delete user");
       }
@@ -152,15 +194,34 @@ const ManageUsersPage = () => {
                     </td>
                     <td className="p-4">{user.lessonsCreated}</td>
                     <td className="p-4">
-                      <div className="flex gap-2">
-                        {user.role !== "admin" && (
-                          <button
-                            onClick={() => handlePromoteAdmin(user._id)}
-                            className="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 text-sm"
-                          >
-                            Promote
-                          </button>
-                        )}
+                      <div className="flex gap-2 items-center">
+                        <select
+                          value={user.role}
+                          onChange={(e) =>
+                            handleAssignRole(user._id, e.target.value)
+                          }
+                          className="px-2 py-1 border rounded"
+                        >
+                          <option value="user">User</option>
+                          <option value="moderator">Moderator</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                        <button
+                          onClick={() =>
+                            handleTogglePremium(user._id, !user.isPremium)
+                          }
+                          className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200 text-sm"
+                        >
+                          {user.isPremium ? "Revoke Premium" : "Make Premium"}
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleSetBadge(user._id, !user.specialBadge)
+                          }
+                          className="px-3 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200 text-sm"
+                        >
+                          {user.specialBadge ? "Remove Badge" : "Give Badge"}
+                        </button>
                         <button
                           onClick={() => handleDeleteUser(user._id)}
                           className="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 text-sm"

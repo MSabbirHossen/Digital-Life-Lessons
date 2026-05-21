@@ -150,6 +150,12 @@ export const reportLesson = async (req, res) => {
   if (!lesson) {
     return res.status(404).json({ success: false, message: "Lesson not found" });
   }
+  if (lesson.userId.toString() === user._id.toString()) {
+    return res.status(403).json({
+      success: false,
+      message: "You cannot report your own lesson",
+    });
+  }
   if (!canInteractWithLesson(lesson, user)) {
     return res.status(403).json({
       success: false,

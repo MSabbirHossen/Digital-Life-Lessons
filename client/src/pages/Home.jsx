@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import { LessonCard } from "../components/LessonCard";
-import { useFavorites } from "../hooks/useInteractions";
 
 const slides = [
   {
@@ -28,13 +27,14 @@ const slides = [
 
 const Home = () => {
   const { user } = useAuth();
-  const { addFavorite } = useFavorites();
   const [featuredLessons, setFeaturedLessons] = useState([]);
+  const [mostSavedLessons, setMostSavedLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
     fetchFeaturedLessons();
+    fetchMostSaved();
   }, []);
 
   useEffect(() => {
@@ -66,6 +66,17 @@ const Home = () => {
     }
   };
 
+  const fetchMostSaved = async () => {
+    try {
+      const res = await api.get("/lessons/public", {
+        params: { sort: "mostSaved", limit: 6 },
+      });
+      setMostSavedLessons(res.data.lessons || []);
+    } catch (err) {
+      console.error("Error fetching most saved lessons:", err);
+    }
+  };
+
   const topContributors = useMemo(() => {
     const authors = new Map();
     featuredLessons.forEach((lesson) => {
@@ -81,13 +92,14 @@ const Home = () => {
     return Array.from(authors.values()).slice(0, 4);
   }, [featuredLessons]);
 
-  const handleFavoriteClick = async (lessonId) => {
-    await addFavorite(lessonId);
+  const handleFavoriteClick = async () => {
     fetchFeaturedLessons();
+    fetchMostSaved();
   };
 
   const slide = slides[activeSlide];
-  const slideTarget = !user && slide.to.startsWith("/dashboard") ? "/login" : slide.to;
+  const slideTarget =
+    !user && slide.to.startsWith("/dashboard") ? "/login" : slide.to;
 
   return (
     <div>
@@ -107,7 +119,10 @@ const Home = () => {
               <Link to={slideTarget} className="btn-primary">
                 {slide.action}
               </Link>
-              <Link to={user ? "/dashboard" : "/register"} className="btn-ghost">
+              <Link
+                to={user ? "/dashboard" : "/register"}
+                className="btn-ghost"
+              >
                 {user ? "Open Dashboard" : "Create Free Account"}
               </Link>
             </div>
@@ -131,17 +146,22 @@ const Home = () => {
           <div className="rounded-2xl border border-white bg-white/80 p-6 shadow-xl">
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl bg-primary p-5 text-white">
-                <p className="text-3xl font-bold">{featuredLessons.length || 0}</p>
+                <p className="text-3xl font-bold">
+                  {featuredLessons.length || 0}
+                </p>
                 <p className="text-sm opacity-90">Featured lessons</p>
               </div>
               <div className="rounded-xl bg-secondary p-5 text-white">
-                <p className="text-3xl font-bold">{topContributors.length || 0}</p>
+                <p className="text-3xl font-bold">
+                  {topContributors.length || 0}
+                </p>
                 <p className="text-sm opacity-90">Active voices</p>
               </div>
               <div className="col-span-2 rounded-xl bg-gray-900 p-5 text-white">
                 <p className="mb-2 text-sm text-gray-300">Community focus</p>
                 <p className="text-xl font-semibold">
-                  Public, private, free, and premium lessons with secure access rules.
+                  Public, private, free, and premium lessons with secure access
+                  rules.
                 </p>
               </div>
             </div>
@@ -156,10 +176,19 @@ const Home = () => {
           </h2>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
             {[
-              ["Preserve Wisdom", "Document meaningful lessons before they fade."],
-              ["Share Context", "Help others learn from real lived experience."],
+              [
+                "Preserve Wisdom",
+                "Document meaningful lessons before they fade.",
+              ],
+              [
+                "Share Context",
+                "Help others learn from real lived experience.",
+              ],
               ["Track Growth", "See patterns in your reflections over time."],
-              ["Learn Mindfully", "Browse grounded insights from the community."],
+              [
+                "Learn Mindfully",
+                "Browse grounded insights from the community.",
+              ],
             ].map(([title, copy]) => (
               <div key={title} className="card p-6">
                 <h3 className="mb-2 text-lg font-bold">{title}</h3>
@@ -187,7 +216,10 @@ const Home = () => {
           {loading ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="h-72 animate-pulse rounded-lg bg-white shadow" />
+                <div
+                  key={index}
+                  className="h-72 animate-pulse rounded-lg bg-white shadow"
+                />
               ))}
             </div>
           ) : featuredLessons.length > 0 ? (
@@ -213,7 +245,7 @@ const Home = () => {
 
       <section className="bg-white px-4 py-16">
         <div className="mx-auto max-w-7xl">
-          <h2 className="mb-8 text-3xl font-bold">Top Contributors</h2>
+          <h2 className="mb-8 text-3xl font-bold">Top Contributors of the Week</h2>
           {topContributors.length ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               {topContributors.map((author) => (
@@ -230,7 +262,34 @@ const Home = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-600">Contributor stats will appear after lessons are shared.</p>
+            <p className="text-gray-600">
+              Contributor stats will appear after lessons are shared.
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="bg-gray-50 px-4 py-16">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-3xl font-bold">Most Saved Lessons</h2>
+            <Link to="/lessons" className="text-sm text-primary underline">
+              View all
+            </Link>
+          </div>
+
+          {mostSavedLessons.length ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {mostSavedLessons.map((lesson) => (
+                <LessonCard
+                  key={lesson._id}
+                  lesson={lesson}
+                  onFavoriteClick={handleFavoriteClick}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600">No popular lessons yet.</p>
           )}
         </div>
       </section>

@@ -1,9 +1,22 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react";
+import { FaHeart, FaRegHeart, FaSave, FaRegBookmark } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { useInteractions, useFavorites } from "../hooks/useInteractions";
 
 export const LessonCard = ({ lesson, onFavoriteClick }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toggleLike } = useInteractions();
+  const { addFavorite, removeFavorite } = useFavorites();
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    setIsFavorited(Boolean(lesson.isFavorited));
+    setIsLiked(Boolean(lesson.isLiked));
+  }, [lesson.isFavorited, lesson.isLiked]);
 
   const isOwner = user?._id === lesson.userId?._id;
   const isLocked =
@@ -12,11 +25,35 @@ export const LessonCard = ({ lesson, onFavoriteClick }) => {
     user?.role !== "admin" &&
     !isOwner;
 
+  const handleLikeClick = async (event) => {
+    event.stopPropagation();
+    if (!user) {
+      toast.error("Please login to like lessons");
+      return;
+    }
+    const updated = await toggleLike(lesson._id);
+    if (updated) {
+      setIsLiked((current) => !current);
+    }
+  };
+
+  const handleSaveClick = async (event) => {
+    event.stopPropagation();
+    if (!user) {
+      toast.error("Please login to save lessons");
+      return;
+    }
+    const saved = isFavorited
+      ? await removeFavorite(lesson._id)
+      : await addFavorite(lesson._id);
+    if (saved) {
+      setIsFavorited(!isFavorited);
+      onFavoriteClick?.(lesson._id);
+    }
+  };
+
   return (
-    <article
-      onClick={() => navigate(`/lessons/${lesson._id}`)}
-      className="card flex h-full cursor-pointer flex-col overflow-hidden p-4"
-    >
+    <article className="card flex h-full flex-col overflow-hidden p-4">
       <div className="relative mb-4">
         <div className="flex h-40 w-full items-center justify-center overflow-hidden rounded-lg bg-gray-200">
           {lesson.imageURL ? (
@@ -27,7 +64,9 @@ export const LessonCard = ({ lesson, onFavoriteClick }) => {
               loading="lazy"
             />
           ) : (
-            <span className="text-sm font-semibold text-gray-500">No image</span>
+            <span className="text-sm font-semibold text-gray-500">
+              No image
+            </span>
           )}
         </div>
 
@@ -66,25 +105,29 @@ export const LessonCard = ({ lesson, onFavoriteClick }) => {
       </div>
 
       <div className="flex items-center justify-between border-t pt-3 text-sm text-gray-500">
-        <div className="flex gap-4">
-          <span>Likes {lesson.likesCount || 0}</span>
-          <span>Saves {lesson.favoritesCount || 0}</span>
-        </div>
-        {user && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onFavoriteClick?.(lesson._id);
-            }}
-            className="rounded px-2 py-1 text-secondary hover:bg-secondary/10"
-          >
-            Save
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleLikeClick}
+          className={`inline-flex items-center gap-2 rounded px-3 py-2 transition ${
+            isLiked ? "bg-red-50 text-red-600" : "hover:bg-gray-100"
+          }`}
+        >
+          {isLiked ? <FaHeart /> : <FaRegHeart />}
+          Like {lesson.likesCount || 0}
+        </button>
+        <button
+          type="button"
+          onClick={handleSaveClick}
+          className={`inline-flex items-center gap-2 rounded px-3 py-2 transition ${
+            isFavorited ? "bg-emerald-50 text-emerald-700" : "hover:bg-gray-100"
+          }`}
+        >
+          {isFavorited ? <FaSave /> : <FaRegBookmark />}
+          {isFavorited ? "Saved" : "Save"}
+        </button>
       </div>
 
-      <div className="mt-3 border-t pt-3 text-sm text-gray-600">
+      <div className="mt-3 border-t pt-3 text-sm text-gray-600 flex items-center justify-between">
         {lesson.userId?._id ? (
           <Link
             to={`/profile/${lesson.userId._id}`}
@@ -96,6 +139,13 @@ export const LessonCard = ({ lesson, onFavoriteClick }) => {
         ) : (
           <p>By Unknown</p>
         )}
+        <button
+          onClick={() => navigate(`/lessons/${lesson._id}`)}
+          className="ml-4 btn-primary text-sm"
+          aria-label={`See details for ${lesson.title}`}
+        >
+          See Details
+        </button>
       </div>
     </article>
   );
