@@ -18,7 +18,8 @@ export const Navbar = () => {
     if (typeof window === "undefined") return "light";
     return (
       localStorage.getItem("theme") ||
-      (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+      (window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light")
     );
@@ -47,7 +48,6 @@ export const Navbar = () => {
   const publicLinks = [
     { to: "/", label: "Home" },
     { to: "/lessons", label: "Public Lessons" },
-    { to: "/meet-the-developer", label: "Meet the Developer" },
   ];
 
   const privateLinks = [
