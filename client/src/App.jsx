@@ -73,7 +73,10 @@ const AppShell = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/lessons" element={<PublicLessons />} />
               <Route path="/public-lessons" element={<PublicLessons />} />
-              <Route path="/meet-the-developer" element={<MeetDeveloperPage />} />
+              <Route
+                path="/meet-the-developer"
+                element={<MeetDeveloperPage />}
+              />
               <Route
                 path="/lessons/:id"
                 element={
