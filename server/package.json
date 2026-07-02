@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "build": "echo 'No build step needed for Node.js server'"
+    "build": "echo 'No build step needed for Node.js server'",
+    "test": "vitest",
+    "test:ci": "vitest run --reporter verbose"
   },
   "dependencies": {
     "compression": "^1.8.1",
@@ -23,6 +25,8 @@
     "validator": "^13.9.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "vitest": "^1.0.0",
+    "supertest": "^6.3.3"
   }
 }
